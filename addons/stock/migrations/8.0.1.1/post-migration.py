@@ -148,7 +148,7 @@ def migrate_stock_location(cr, registry):
                 company_id)
         vals['warehouse_id'] = warehouse_ids[0]
         warehouse = warehouse_obj.browse(cr, uid, vals['warehouse_id'])
-        if len(warehouse_ids > 1):
+        if len(warehouse_ids) > 1:
             openupgrade.message(
                 cr, 'stock', 'stock_location_path', 'warehouse_id',
                 'Multiple warehouses found for location path %s. Taking '
@@ -472,14 +472,16 @@ def _migrate_stock_warehouse(cr, registry, res_id):
 
 def migrate_stock_warehouse(cr, registry):
     """Migrate all the warehouses"""
+    warehouse_obj = registry['stock.warehouse']
     # Set code
-    cr.execute(
-        """
-        UPDATE stock_warehouse SET code = 'WH'||id
-        WHERE code IS NULL OR code = ''""")
-    cr.execute("""select id from stock_warehouse order by id asc""")
-    for res in cr.fetchall():
-        _migrate_stock_warehouse(cr, registry, res[0])
+    cr.execute("""select id, code from stock_warehouse order by id asc""")
+    res = cr.fetchall()
+    for wh in res:
+        if not wh[1]:
+            warehouse_obj.write(cr, uid, wh[0], {'code': 'WH%s' % (wh[0])})
+    # Migrate each warehouse
+    for wh in res:
+        _migrate_stock_warehouse(cr, registry, wh[0])
 
 
 def migrate_stock_warehouse_orderpoint(cr):
@@ -577,7 +579,7 @@ def migrate_procurement_order(cr, registry):
         """)
     company_obj = registry['res.company']
     warehouse_obj = registry['stock.warehouse']
-    procurement_obj = registry['stock.warehouse']
+    procurement_obj = registry['procurement.order']
     for company in company_obj.browse(
             cr, uid, company_obj.search(cr, uid, [])):
         procurement_ids = procurement_obj.search(
@@ -611,6 +613,10 @@ def migrate_stock_qty(cr, registry):
     stock_move_obj = registry['stock.move']
 
     done_move_ids = stock_move_obj.search(cr, uid, [('state', '=', 'done')])
+    openupgrade.message(
+        cr, 'stock', 'stock_move', 'state',
+        'Reprocess %s stock moves in state done to fill stock.quant',
+        len(done_move_ids))
     stock_move_obj.write(cr, uid, done_move_ids, {'state': 'draft'})
     # Process moves using action_done.
     stock_move_obj.action_done(cr, uid, done_move_ids, context=None)
