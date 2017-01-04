@@ -322,7 +322,8 @@ class res_partner(osv.Model, format_address):
 
         # colorize user avatars
         if not is_company:
-            image = tools.image_colorize(image)
+            pass
+            # image = tools.image_colorize(image)
 
         return tools.image_resize_image_big(image.encode('base64'))
 
