@@ -919,13 +919,15 @@ def _move_done(env, move):
     quant_obj.quants_unreserve(move)
 
 
-def migrate_stock_qty(cr, registry):
+def set_restrict_lot_id(cr, registry):
     # First set restrict_lot_id so that quants point to correct moves
     sql = '''
         UPDATE stock_move SET restrict_lot_id = {}
     '''.format(openupgrade.get_legacy_name('prodlot_id'))
     openupgrade.logged_query(cr, sql)
 
+def migrate_stock_qty(cr, registry):
+    # First set restrict_lot_id so that quants point to correct moves
     if not tools.config.get('sql_quants_creation', False):
         orm_migrate_stock_qty(cr, registry)
     else:
@@ -961,9 +963,37 @@ def sql_migrate_stock_qty(cr, registry):
     logger.info(
         "%d done moves with not null quantity found. Processing by SQL" % (
             moves_qty))
-    f = tools.file_open('stock/migrations/8.0.1.1/quants_creation.sql')
+    # Create Functions
+    f = tools.file_open(
+        'stock/migrations/8.0.1.1/quants_creation_function.sql')
     cr.execute(f.read())
-    error_qty = cr.fetchone()
+
+    # Quands creation request
+    f = tools.file_open('stock/migrations/8.0.1.1/quants_creation.sql')
+    original_request = f.read()
+    cr.execute("select max(id) FROM product_product")
+    product_max_id = cr.fetchone()[0]
+    product_qty = int(tools.config.get('sql_quants_creation_product_qty', 0))
+    error_qty = 0
+    if not product_qty:
+        request = original_request
+        request.replace("{begin_product_id}", 0)
+        request.replace("{end_product_id", product_max_id)
+        print request
+        cr.execute(request)
+        error_qty = cr.fetchone()
+    else:
+        for i in range(0, product_max_id / product_qty):
+            request = original_request
+            begin_product_id = i * product_qty
+            end_product_id = (i + 1) * product_qty
+            request = request.replace("{begin_product_id}", str(begin_product_id))
+            request = request.replace("{end_product_id}", str(end_product_id))
+            cr.execute(request)
+            error_qty += cr.fetchone()[0]
+            logger.info("manage product id from %d to %d / %d" % (
+                begin_product_id, end_product_id, product_max_id))
+            cr.commit_org()
     if error_qty:
         logger.error(
             "%d / %d stock moves failed. Please see the table"
@@ -1124,7 +1154,6 @@ def migrate(cr, version):
     """
     registry = RegistryManager.get(cr.dbname)
 
-
     if not test_partial_migration(cr, 'stock.post.populate_stock_move_fields'):
         populate_stock_move_fields(cr, registry)
         set_partial_migration(cr, 'stock.post.populate_stock_move_fields')
@@ -1145,22 +1174,34 @@ def migrate(cr, version):
         set_partial_migration(cr, 'stock.post.migrate_stock_location')
 
     if have_procurement:
-        if not test_partial_migration(cr, 'stock.post.migrate_stock_warehouse_orderpoint'):
+        if not test_partial_migration(
+                cr, 'stock.post.migrate_stock_warehouse_orderpoint'):
             migrate_stock_warehouse_orderpoint(cr)
-            set_partial_migration(cr, 'stock.post.migrate_stock_warehouse_orderpoint')
+            set_partial_migration(
+                cr, 'stock.post.migrate_stock_warehouse_orderpoint')
 
-        if not test_partial_migration(cr, 'stock.post.migrate_product_supply_method'):
+        if not test_partial_migration(
+                cr, 'stock.post.migrate_product_supply_method'):
             migrate_product_supply_method(cr, registry)
-            set_partial_migration(cr, 'stock.post.migrate_product_supply_method')
+            set_partial_migration(
+                cr, 'stock.post.migrate_product_supply_method')
 
     if not test_partial_migration(cr, 'stock.post.migrate_procurement_order'):
             migrate_procurement_order(cr, registry)
             set_partial_migration(cr, 'stock.post.migrate_procurement_order')
 
+    if not test_partial_migration(cr, 'stock.post.set_restrict_lot_id'):
+        set_restrict_lot_id(cr, registry)
+        set_partial_migration(cr, 'stock.post.set_restrict_lot_id')
 
-    import pdb; pdb.set_trace()
-    migrate_stock_qty(cr, registry)
-    migrate_stock_production_lot(cr, registry)
+    if not test_partial_migration(cr, 'stock.post.migrate_stock_qty'):
+        migrate_stock_qty(cr, registry)
+        set_partial_migration(cr, 'stock.post.migrate_stock_qty')
+
+    if not test_partial_migration(
+            cr, 'stock.post.migrate_stock_production_lot'):
+        migrate_stock_production_lot(cr, registry)
+        set_partial_migration(cr, 'stock.post.migrate_stock_production_lot')
 
     # Initiate defaults before filling.
     openupgrade.set_defaults(cr, registry, default_spec, force=False)

@@ -205,7 +205,8 @@ def migrate(cr, version):
         openupgrade.rename_xmlids(cr, xmlid_renames)
         set_partial_migration(cr, 'stock.pre.rename_xmlids')
 
-    if not test_partial_migration(cr, 'stock.pre.initialize_location_inventory'):
+    if not test_partial_migration(
+            cr, 'stock.pre.initialize_location_inventory'):
         initialize_location_inventory(cr)
         set_partial_migration(cr, 'stock.pre.initialize_location_inventory')
 
