@@ -169,12 +169,54 @@ def create_stock_move_fields(cr):
         ADD COLUMN "procure_method" VARCHAR DEFAULT 'make_to_stock'""")
 
 
+def _create_partial_migration_table(cr):
+    cr.execute("""
+        CREATE TABLE IF NOT EXISTS openupgrade_8_partial_migration(
+            name character varying NOT NULL
+        );""")
+
+
+def test_partial_migration(cr, name):
+    _create_partial_migration_table(cr)
+    cr.execute("""
+        SELECT count(*) FROM openupgrade_8_partial_migration WHERE name = %s
+        """, (name, ))
+    done = cr.fetchone()[0] == 1
+    if done:
+        logger.info("Step '%s' skipped, because previously done." % (name))
+    return done
+
+
+def set_partial_migration(cr, name):
+    cr.execute("""
+        INSERT INTO openupgrade_8_partial_migration (name)
+        VALUES (%s);""", (name, ))
+    logger.info("Step '%s' done." % (name))
+    cr.commit_org()
+
+
 @openupgrade.migrate()
 def migrate(cr, version):
-    openupgrade.rename_columns(cr, column_renames)
-    openupgrade.rename_xmlids(cr, xmlid_renames)
-    initialize_location_inventory(cr)
-    openupgrade.rename_tables(cr, [('stock_inventory_move_rel', None)])
+    if not test_partial_migration(cr, 'stock.pre.rename_columns'):
+        openupgrade.rename_columns(cr, column_renames)
+        set_partial_migration(cr, 'stock.pre.rename_columns')
 
-    create_stock_picking_fields(cr)
-    create_stock_move_fields(cr)
+    if not test_partial_migration(cr, 'stock.pre.rename_xmlids'):
+        openupgrade.rename_xmlids(cr, xmlid_renames)
+        set_partial_migration(cr, 'stock.pre.rename_xmlids')
+
+    if not test_partial_migration(cr, 'stock.pre.initialize_location_inventory'):
+        initialize_location_inventory(cr)
+        set_partial_migration(cr, 'stock.pre.initialize_location_inventory')
+
+    if not test_partial_migration(cr, 'stock.pre.rename_tables'):
+        openupgrade.rename_tables(cr, [('stock_inventory_move_rel', None)])
+        set_partial_migration(cr, 'stock.pre.rename_tables')
+
+    if not test_partial_migration(cr, 'stock.pre.create_stock_picking_fields'):
+        create_stock_picking_fields(cr)
+        set_partial_migration(cr, 'stock.pre.create_stock_picking_fields')
+
+    if not test_partial_migration(cr, 'stock.pre.create_stock_move_fields'):
+        create_stock_move_fields(cr)
+        set_partial_migration(cr, 'stock.pre.create_stock_move_fields')

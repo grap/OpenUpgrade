@@ -1088,6 +1088,32 @@ def populate_stock_move_fields(cr, registry):
         WHERE sm1.id = res.id""")
 
 
+def _create_partial_migration_table(cr):
+    cr.execute("""
+        CREATE TABLE IF NOT EXISTS openupgrade_8_partial_migration(
+            name character varying NOT NULL
+        );""")
+
+
+def test_partial_migration(cr, name):
+    _create_partial_migration_table(cr)
+    cr.execute("""
+        SELECT count(*) FROM openupgrade_8_partial_migration WHERE name = %s
+        """, (name, ))
+    done = cr.fetchone()[0] == 1
+    if done:
+        logger.info("Step '%s' skipped, because previously done." % (name))
+    return done
+
+
+def set_partial_migration(cr, name):
+    cr.execute("""
+        INSERT INTO openupgrade_8_partial_migration (name)
+        VALUES (%s);""", (name, ))
+    logger.info("Step '%s' done." % (name))
+    cr.commit_org()
+
+
 @openupgrade.migrate()
 def migrate(cr, version):
     """
@@ -1097,19 +1123,42 @@ def migrate(cr, version):
     database in which procurement related stuff needs to be migrated.
     """
     registry = RegistryManager.get(cr.dbname)
-    populate_stock_move_fields(cr, registry)
+
+
+    if not test_partial_migration(cr, 'stock.post.populate_stock_move_fields'):
+        populate_stock_move_fields(cr, registry)
+        set_partial_migration(cr, 'stock.post.populate_stock_move_fields')
+
     have_procurement = openupgrade.column_exists(
         cr, 'product_template', openupgrade.get_legacy_name('procure_method'))
 
-    migrate_stock_warehouses(cr, registry)
-    migrate_stock_picking(cr, registry)
-    migrate_stock_location(cr, registry)
+    if not test_partial_migration(cr, 'stock.post.migrate_stock_warehouses'):
+        migrate_stock_warehouses(cr, registry)
+        set_partial_migration(cr, 'stock.post.migrate_stock_warehouses')
+
+    if not test_partial_migration(cr, 'stock.post.migrate_stock_picking'):
+        migrate_stock_picking(cr, registry)
+        set_partial_migration(cr, 'stock.post.migrate_stock_picking')
+
+    if not test_partial_migration(cr, 'stock.post.migrate_stock_location'):
+        migrate_stock_location(cr, registry)
+        set_partial_migration(cr, 'stock.post.migrate_stock_location')
 
     if have_procurement:
-        migrate_stock_warehouse_orderpoint(cr)
-        migrate_product_supply_method(cr, registry)
-        migrate_procurement_order(cr, registry)
+        if not test_partial_migration(cr, 'stock.post.migrate_stock_warehouse_orderpoint'):
+            migrate_stock_warehouse_orderpoint(cr)
+            set_partial_migration(cr, 'stock.post.migrate_stock_warehouse_orderpoint')
 
+        if not test_partial_migration(cr, 'stock.post.migrate_product_supply_method'):
+            migrate_product_supply_method(cr, registry)
+            set_partial_migration(cr, 'stock.post.migrate_product_supply_method')
+
+    if not test_partial_migration(cr, 'stock.post.migrate_procurement_order'):
+            migrate_procurement_order(cr, registry)
+            set_partial_migration(cr, 'stock.post.migrate_procurement_order')
+
+
+    import pdb; pdb.set_trace()
     migrate_stock_qty(cr, registry)
     migrate_stock_production_lot(cr, registry)
 
