@@ -974,6 +974,7 @@ def sql_migrate_stock_qty(cr, registry):
     cr.execute("select max(id) FROM product_product")
     product_max_id = cr.fetchone()[0]
     product_qty = int(tools.config.get('sql_quants_creation_product_qty', 0))
+    move_qty = 0
     error_qty = 0
     if not product_qty:
         request = original_request
@@ -983,17 +984,22 @@ def sql_migrate_stock_qty(cr, registry):
         cr.execute(request)
         error_qty = cr.fetchone()
     else:
-        for i in range(0, product_max_id / product_qty):
+        for i in range(14935 / (product_qty), product_max_id / (product_qty)):
             request = original_request
             begin_product_id = i * product_qty
             end_product_id = (i + 1) * product_qty
             request = request.replace("{begin_product_id}", str(begin_product_id))
             request = request.replace("{end_product_id}", str(end_product_id))
             cr.execute(request)
-            error_qty += cr.fetchone()[0]
-            logger.info("manage product id from %d to %d / %d" % (
-                begin_product_id, end_product_id, product_max_id))
-            cr.commit_org()
+            res = cr.fetchone()
+            move_qty += res[0][0][0]
+            error_qty += res[0][0][1]
+            logger.info("managed product id from %d to %d / %d. %d" % (
+                begin_product_id, end_product_id, product_max_id, res[0][0][0]))
+            if (i % 100) == 0:
+                logger.info("Commiting ...")
+                cr.commit_org()
+                logger.info("Commited.")
     if error_qty:
         logger.error(
             "%d / %d stock moves failed. Please see the table"
