@@ -21,7 +21,7 @@
 ##############################################################################
 
 import logging
-from openerp import api, SUPERUSER_ID, tools
+from openerp import api, SUPERUSER_ID, sql_db, tools
 from openerp.openupgrade import openupgrade, openupgrade_80
 from openerp.modules.registry import RegistryManager
 from openerp import SUPERUSER_ID as uid
@@ -931,7 +931,7 @@ def migrate_stock_qty(cr, registry):
     if not tools.config.get('sql_quants_creation', False):
         orm_migrate_stock_qty(cr, registry)
     else:
-        sql_migrate_stock_qty(cr, registry)
+        sql_migrate_stock_qty(cr)
 
 
 def orm_migrate_stock_qty(cr, registry):
@@ -950,29 +950,129 @@ def orm_migrate_stock_qty(cr, registry):
                 _move_done(env, move)
 
 
-def sql_migrate_stock_qty(cr, registry):
-    """Reprocess stock moves in done state to fill stock.quant by SQL script.
-    To activate this feature, please set a new key in your configuration file:
-    sql_quants_creation = True
+def sql_migrate_stock_qty(cr):
     """
+    Reprocess stock moves in done state to fill stock.quant by SQL script.
+    To avoid too huge request, you can launch many requests, for a given
+    amount of moves.
+    Optionaly, you can choose to launch partial commit to reduce transaction
+    size. Please consider that if enabled, you will not be able to relaunch
+    a migration script, stopped during stock post-migration process.
+    To activate this feature, please add new keys in your configuration file::
+
+        sql_quants_creation = True
+        sql_quants_creation_move_qty = 1000
+        sql_quants_creation_partial_commit = True
+
+    If quants creation takes too much time, you can run the migration script
+    on a database, at a given time, and so later run your migration on a up to
+    date database, mentionning the name of the old old. So, old quants
+    generated will be included quickly, and new ones will be be created,
+    based on the last move id of your old database.
+    To activate this feature, please add a key in your configuration file::
+
+        sql_quants_partial_database = database_name
+        sql_quants_partial_step_qty = 1000
+
+    """
+    partial_database = tools.config.get('sql_quants_partial_database', False)
+    if partial_database:
+        first_move_id = _sql_import_partial_database(cr, partial_database)
+    else:
+        first_move_id = 1
     with api.Environment.manage():
         env = api.Environment(cr, SUPERUSER_ID, {})
         moves_qty = len(env['stock.move'].search([
+            ('id', '>=', first_move_id),
             ('product_uom_qty', '>', 0),
             ('state', 'in', ['done'])], order="date"))
     logger.info(
         "%d done moves with not null quantity found. Processing by SQL" % (
             moves_qty))
-    f = tools.file_open('stock/migrations/8.0.1.1/quants_creation.sql')
-    cr.execute(f.read())
-    error_qty = cr.fetchone()
+
+    # Create SQL functions and temporary tables
+    cr.execute(tools.file_open(
+        'stock/migrations/8.0.1.1/sql_delete_function.sql').read())
+    cr.execute(tools.file_open(
+        'stock/migrations/8.0.1.1/sql_delete_error_table.sql').read())
+    cr.execute(tools.file_open(
+        'stock/migrations/8.0.1.1/sql_create_function.sql').read())
+    cr.execute(tools.file_open(
+        'stock/migrations/8.0.1.1/sql_create_error_table.sql').read())
+
+    # Quands creation request
+    f = tools.file_open('stock/migrations/8.0.1.1/sql_create_quant.sql')
+    original_request = f.read()
+    move_qty = int(tools.config.get('sql_quants_creation_move_qty', 0))
+
+    cr.execute("select max(id) FROM stock_move")
+    max_move_id = cr.fetchone()[0]
+
+    if not move_qty:
+        error_qty = _sql_migrate_stock_qty_moves(
+            cr, original_request, first_move_id, max_move_id)
+    else:
+        error_qty = 0
+        while first_move_id < max_move_id:
+            last_move_id = first_move_id + move_qty - 1
+            error_qty += _sql_migrate_stock_qty_moves(
+                cr, original_request, first_move_id, last_move_id)
+            first_move_id += move_qty
+
+    # Drop SQL functions and temporary tables, and log result
+    cr.execute(tools.file_open(
+        'stock/migrations/8.0.1.1/sql_delete_function.sql').read())
     if error_qty:
         logger.error(
             "%d / %d stock moves failed. Please see the table"
             " 'stock_quants_openupgrade_8_log' for more details." % (
                 error_qty, moves_qty))
     else:
+        cr.execute(tools.file_open(
+            'stock/migrations/8.0.1.1/sql_delete_error_table.sql').read())
         logger.info("%d done moves processed by SQL." % (moves_qty))
+
+
+@openupgrade.logging()
+def _sql_import_partial_database(cr, partial_database):
+    other_connection = sql_db.db_connect(partial_database)
+    other_cr = other_connection.cursor()
+    step_qty = int(tools.config.get('sql_quants_partial_step_qty', 1000))
+    # Get quant qty
+    other_cr.execute("select max(id) from stock_quant")
+    
+    # Importing quants by step
+    quant_max_id = other_cr.fetchone()[0]
+    current_id = 0
+    for current_id <= quant_max_id:
+        _sql_import_partial_database_quant(cr, other_cr, current_id, step)
+        current_id += step
+
+@openupgrade.logging()
+def _sql_import_partial_database_quant(cr, other_cr, current_id, step):
+    # Insert Quants
+    other_cr.execute("""
+        SELECT * from stock_quant
+        WHERE ID >= %d
+        AND ID < %d
+        order by id;
+    """)
+    res = other_cr.fetchall()
+
+    # Insert Quants / Move rel
+
+
+@openupgrade.logging()
+def _sql_migrate_stock_qty_moves(cr, request, first_move_id, last_move_id):
+    request = request.replace("{first_move_id}", str(first_move_id))
+    request = request.replace("{last_move_id}", str(last_move_id))
+    cr.execute(request)
+    error_qty = cr.fetchone()[0]
+    if bool(tools.config.get('sql_quants_creation_partial_commit', False)):
+        cr.commit_org()
+    logger.info("Quants created for move id from #%d to #%d" % (
+        first_move_id, last_move_id))
+    return error_qty
 
 
 def migrate_stock_production_lot(cr, registry):
@@ -1125,3 +1225,4 @@ def migrate(cr, version):
         cr, uid, registry, ['stock.production.lot', 'stock.picking'])
     migrate_move_inventory(cr, registry)
     reset_warehouse_data_ids(cr, registry)
+    import pdb; pdb.set_trace()
