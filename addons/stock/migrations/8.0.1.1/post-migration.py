@@ -927,6 +927,8 @@ def migrate_stock_qty(cr, registry):
     '''.format(openupgrade.get_legacy_name('prodlot_id'))
     openupgrade.logged_query(cr, sql)
 
+    return True
+
     with api.Environment.manage():
         env = api.Environment(cr, SUPERUSER_ID, {})
         moves = env['stock.move'].search(
