@@ -51,6 +51,8 @@ def create_workitem_picking(cr, uid, pool):
         WHERE purchase_line_id is not null
         AND state != %s""",
         ('done',))
+
+    order_ids_wkf_not_found = []
     for res in cr.fetchall():
         pol = pol_obj.browse(cr, uid, res[0])
 
@@ -62,6 +64,16 @@ def create_workitem_picking(cr, uid, pool):
             (pol.order_id.id, 'purchase.order'))
         res3 = cr.fetchone()
         wkf_instance = res3 and res3[0]
+
+        if not wkf_instance:
+            if pol.order_id.id not in order_ids_wkf_not_found:
+                logger.warning(
+                    "Failed to find workflow instance for the purchase order"
+                    " #%d ; name : %s ; date_order %s ; state %s ",
+                    pol.order_id.id, pol.order_id.name,
+                    pol.order_id.date_order, pol.order_id.state)
+                order_ids_wkf_not_found.append(pol.order_id.id)
+            continue
 
         # Create workItem
         cr.execute(
