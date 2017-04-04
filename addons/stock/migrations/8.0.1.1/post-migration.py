@@ -944,6 +944,7 @@ def migrate_stock_production_lot(cr, registry):
     """Serial numbers migration
     :param cr:
     """
+    return True
     lot_obj = registry['stock.production.lot']
     user_obj = registry['res.users']
 
