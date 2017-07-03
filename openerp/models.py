@@ -2266,7 +2266,7 @@ class BaseModel(object):
         return True
 
     def _update_store(self, cr, f, k):
-        _logger.info("storing computed values of fields.function '%s'", k)
+        _logger.info("<FIELD-FUNCTION> storing computed values of fields.function '%s'", k)
         ss = self._columns[k]._symbol_set
         update_query = 'UPDATE "%s" SET "%s"=%s WHERE id=%%s' % (self._table, k, ss[0])
         cr.execute('select id from '+self._table)
@@ -2283,6 +2283,7 @@ class BaseModel(object):
                     val = val[0]
                 if f._type == 'boolean' or val is not False:
                     cr.execute(update_query, (ss[1](val), key))
+        _logger.info("</FIELD-FUNCTION> storing computed values of fields.function '%s'", k)
 
     @api.model
     def _check_selection_field_value(self, field, value):
@@ -2666,6 +2667,7 @@ class BaseModel(object):
                     else:
                         if not isinstance(f, fields.function) or f.store:
                             # add the missing field
+                            _logger.info('<FIELD> Field %s.%s', self._table, k)
                             cr.execute('ALTER TABLE "%s" ADD COLUMN "%s" %s' % (self._table, k, get_pg_type(f)[1]))
                             cr.execute("COMMENT ON COLUMN %s.\"%s\" IS %%s" % (self._table, k), (f.string,))
                             _schema.debug("Table '%s': added column '%s' with definition=%s",
@@ -2713,6 +2715,7 @@ class BaseModel(object):
                                         "ALTER TABLE %s ALTER COLUMN %s SET NOT NULL"
                                     _logger.warning(msg, k, self._table, self._table, k, exc_info=True)
                             cr.commit()
+                            _logger.info('</FIELD> Field %s.%s', self._table, k)
 
         else:
             cr.execute("SELECT relname FROM pg_class WHERE relkind IN ('r','v') AND relname=%s", (self._table,))
