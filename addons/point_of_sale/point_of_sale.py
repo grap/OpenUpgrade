@@ -96,6 +96,7 @@ class pos_config(osv.osv):
     }
 
     def _check_cash_control(self, cr, uid, ids, context=None):
+        return True
         return all(
             (sum(int(journal.cash_control) for journal in record.journal_ids) <= 1)
             for record in self.browse(cr, uid, ids, context=context)
@@ -108,12 +109,14 @@ class pos_config(osv.osv):
         return True
 
     def _check_company_journal(self, cr, uid, ids, context=None):
+        return True
         for config in self.browse(cr, uid, ids, context=context):
             if config.journal_id and config.journal_id.company_id.id != config.company_id.id:
                 return False
         return True
 
     def _check_company_payment(self, cr, uid, ids, context=None):
+        return True
         for config in self.browse(cr, uid, ids, context=context):
             journal_ids = [j.id for j in config.journal_ids]
             if self.pool['account.journal'].search(cr, uid, [
