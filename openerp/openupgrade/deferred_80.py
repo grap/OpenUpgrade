@@ -203,4 +203,4 @@ def migrate_stock_move_warehouse(cr):
 def migrate_deferred(cr, pool):
     migrate_product_valuation(cr, pool)
     migrate_procurement_order_method(cr, pool)
-    migrate_stock_move_warehouse(cr)
+    # migrate_stock_move_warehouse(cr)
