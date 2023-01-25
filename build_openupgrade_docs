@@ -1,7 +1,11 @@
 #!/bin/sh
 
 DOC_BUILD_DIR=${DOC_BUILD_DIR:-$(realpath $(dirname $0)/../openupgrade/docs)}
+echo $DOC_BUILD_DIR
+
 SOURCE=$(realpath $(dirname $0)/../openupgrade/docsource)
+echo $SOURCE
+
 BASE_URL=https://raw.githubusercontent.com/OCA/OpenUpgrade/
 DOC_PARTS="7.0/openerp/openupgrade/doc/source/modules50-60.rst
 7.0/openerp/openupgrade/doc/source/modules60-61.rst
@@ -25,6 +29,10 @@ for line in $DOC_PARTS; do
     wget -q $BASE_URL/$line -O $SOURCE/$name
 done
 OPENUPGRADE_PYTHON_PATH=$DOC_BUILD_DIR/../../
+echo $OPENUPGRADE_PYTHON_PATH
+
 export PYTHONPATH=$PYTHONPATH:$OPENUPGRADE_PYTHON_PATH/odoo
+echo $PYTHONPATH
+
 mkdir -p $DOC_BUILD_DIR/source/.static
 python3 -m sphinx -W -q -d $DOC_BUILD_DIR/.doctrees $SOURCE $OUTPUT_DIR
