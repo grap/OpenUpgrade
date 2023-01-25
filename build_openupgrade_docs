@@ -20,6 +20,7 @@ DOC_PARTS="7.0/openerp/openupgrade/doc/source/modules50-60.rst
 15.0/docsource/modules140-150.rst
 "
 OUTPUT_DIR=${OUTPUT_DIR:-$DOC_BUILD_DIR}
+echo $OUTPUT_DIR
 
 for line in $DOC_PARTS; do
     if [ -z "$line" ]; then
