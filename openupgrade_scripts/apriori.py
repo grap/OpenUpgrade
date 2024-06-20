@@ -129,6 +129,8 @@ renamed_modules.update(
         # https://github.com/grap/grap-odoo-custom/tree/12.0/mrp_bom_line_has_bom
         # https://github.com/OCA/manufacture/tree/16.0/mrp_bom_hierarchy
         "mrp_bom_line_has_bom": "mrp_bom_hierarchy",
+        # quentinDupont:16.0-MIG-mrp_bom_purchase-WHITE-SKY-QD
+        "mrp_bom_purchase": "mrp_bom_wizard_production",
     }
 )
 
