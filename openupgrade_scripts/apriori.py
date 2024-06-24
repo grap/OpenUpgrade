@@ -181,7 +181,7 @@ renamed_modules.update(
 
 merged_modules.update(
     {
-        # ...
+        "recurring_consignment_sale": "recurring_consignment",
     }
 )
 
