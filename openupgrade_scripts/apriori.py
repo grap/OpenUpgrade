@@ -151,12 +151,15 @@ renamed_modules.update(
         # https://github.com/grap/grap-odoo-custom/tree/12.0/mrp_bom_line_has_bom
         # https://github.com/OCA/manufacture/tree/16.0/mrp_bom_hierarchy
         "mrp_bom_line_has_bom": "mrp_bom_hierarchy",
+        # https://github.com/grap/grap-odoo-business/pull/150
+        "technical_partner_access": "partner_hide_technical_company",
     }
 )
 
 merged_modules.update(
     {
         "recurring_consignment_sale": "recurring_consignment",
+        "recurring_consignment_test": "recurring_consignment",
     }
 )
 
