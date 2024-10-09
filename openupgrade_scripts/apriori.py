@@ -150,6 +150,8 @@ renamed_modules.update(
     {
         # https://github.com/grap/grap-odoo-business/pull/150
         "technical_partner_access": "partner_hide_technical_company",
+        # https://github.com/OCA/multi-company/pull/675/
+        "pos_multicompany": "pos_category_multicompany",
     }
 )
 
