@@ -163,3 +163,12 @@ renamed_models = {
 
 # only used here for upgrade_analysis
 merged_models = {}
+
+# GRAP Refactor
+renamed_modules.update(
+    {
+        # https://github.com/grap/grap-odoo-custom/tree/12.0/mrp_bom_line_has_bom
+        # https://github.com/OCA/manufacture/tree/14.0/mrp_bom_hierarchy
+        "mrp_bom_line_has_bom": "mrp_bom_hierarchy",
+    }
+)
