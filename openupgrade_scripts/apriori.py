@@ -172,6 +172,8 @@ renamed_modules.update(
         "technical_partner_access": "partner_hide_technical_company",
         # https://github.com/OCA/multi-company/pull/675/
         "pos_multicompany": "pos_category_multicompany",
+        # Leaving OCA world
+        "pos_customer_display": "pos_odoo_driver_display",
     }
 )
 
