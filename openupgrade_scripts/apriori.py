@@ -183,7 +183,7 @@ renamed_modules.update(
         # https://github.com/OCA/multi-company/pull/675/
         "pos_multicompany": "pos_category_multicompany",
         # Leaving OCA world
-        "pos_customer_display": "pos_odoo_driver_display",
+        "pos_customer_display": "pos_driver_display",
     }
 )
 
