@@ -184,17 +184,23 @@ renamed_modules.update(
         "pos_multicompany": "pos_category_multicompany",
         # Leaving OCA world
         "pos_customer_display": "pos_driver_display",
+        # https://github.com/grap/grap-odoo-custom-account/pull/69
+        "grap_account_export_ebp": "fermente_account_export",
     }
 )
 
 merged_modules.update(
     {
+        # Recurring consignment refactor
         "recurring_consignment_sale": "recurring_consignment",
         "recurring_consignment_test": "recurring_consignment",
         # Obsolete module. removing cae_administrative_ok feature
         "fiscal_company_product": "fiscal_company_base",
         # Useless module in V16
         "fiscal_company_sales_team": "fiscal_company_sale",
+        # Account Export refactor
+        "grap_account_export": "fermente_account_export",
+        "grap_account_export_partner_code": "fermente_account_export",
     }
 )
 
