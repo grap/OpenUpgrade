@@ -194,8 +194,6 @@ merged_modules.update(
         # Recurring consignment refactor
         "recurring_consignment_sale": "recurring_consignment",
         "recurring_consignment_test": "recurring_consignment",
-        # Obsolete module. removing cae_administrative_ok feature
-        "fiscal_company_product": "fiscal_company_base",
         # Useless module in V16
         "fiscal_company_sales_team": "fiscal_company_sale",
         # Account Export refactor
