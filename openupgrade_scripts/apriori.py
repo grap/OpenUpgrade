@@ -186,6 +186,8 @@ renamed_modules.update(
         "product_label_sale": "product_food_certification_sale",
         # https://github.com/grap/grap-odoo-business/pull/179
         "account_invoice_attachment_count": "account_move_attachment_count",
+        # https://github.com/grap/grap-odoo-custom/pull/424
+        "grap_cooperative": "fermente_cooperative_directory",
     }
 )
 
