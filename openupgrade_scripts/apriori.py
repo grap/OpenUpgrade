@@ -188,8 +188,6 @@ renamed_modules.update(
         "account_invoice_attachment_count": "account_move_attachment_count",
         # https://github.com/grap/grap-odoo-custom/pull/424
         "grap_cooperative": "fermente_cooperative_directory",
-        # https://github.com/OCA/sale-workflow/pull/3414
-        "sale_order_weight": "sale_order_ordered_weight",
     }
 )
 
