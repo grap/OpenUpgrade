@@ -188,6 +188,14 @@ renamed_modules.update(
         "account_invoice_attachment_count": "account_move_attachment_count",
         # https://github.com/grap/grap-odoo-custom/pull/424
         "grap_cooperative": "fermente_cooperative_directory",
+        # https://github.com/grap/grap-odoo-custom/pull/416
+        "mrp_bom_print": "mrp_bom_report_allergen",
+        # Partagé dans l'OCA en V16
+        "mrp_bom_product_variant": "mrp_bom_select_product_variant",
+        # Partagé dans l'OCA en V16
+        "mrp_bom_sale_product_margin": "mrp_bom_product_price_margin",
+        # grap-odoo-business
+        "mrp_food": "mrp_bom_product_allergen",
     }
 )
 
