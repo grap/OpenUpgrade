@@ -196,6 +196,9 @@ renamed_modules.update(
         "mrp_bom_sale_product_margin": "mrp_bom_product_price_margin",
         # grap-odoo-business
         "mrp_food": "mrp_bom_product_allergen",
+        # grap-odoo-custom
+        "grap_change_base_product_mass_addition": "fermente_purchase_quick",
+        "grap_change_views_project": "project_odoo_development",
     }
 )
 
