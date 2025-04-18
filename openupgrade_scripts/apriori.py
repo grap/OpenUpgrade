@@ -199,7 +199,9 @@ renamed_modules.update(
         "mrp_bom_product_variant": "mrp_bom_select_product_variant",
         # Partagé dans l'OCA en V16
         "mrp_bom_sale_product_margin": "mrp_bom_product_price_margin",
-        # grap-odoo-business
+        # https://github.com/grap/grap-odoo-incubator/pull/190
+        # grap-odoo-incubator
+        "stock_internal_use_of_products": "stock_picking_account_move",
         "mrp_food": "mrp_bom_product_allergen",
         # grap-odoo-custom
         "grap_change_base_product_mass_addition": "fermente_purchase_quick",
