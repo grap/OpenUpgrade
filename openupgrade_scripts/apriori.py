@@ -206,6 +206,8 @@ renamed_modules.update(
         # grap-odoo-custom
         "grap_change_base_product_mass_addition": "fermente_purchase_quick",
         "grap_change_views_project": "project_odoo_development",
+        # odoo-addons-multi-company
+        "multi_company_barcodes": "barcode_rule_per_company",
     }
 )
 
