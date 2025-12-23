@@ -58,6 +58,7 @@ renamed_modules = {
     "website_sale_coupon_selection_wizard": "website_sale_loyalty_suggestion_wizard",
     # OCA/sale-workflow
     "sale_by_packaging": "sell_only_by_packaging",
+    "duplication_sale_order": "sale_order_recurrence",
     # OCA/server-ux
     "mass_editing": "server_action_mass_edit",
     # OCA/l10n-italy
