@@ -211,7 +211,7 @@ renamed_modules.update(
         "multi_company_barcodes": "barcode_rule_per_company",
         # Coop It Easy
         # rename of wallet modules: https://github.com/coopiteasy/addons/pull/397
-        "account_customer_wallet": "customer_wallet_account",
+        "account_customer_wallet": "customer_wallet",
         "pos_customer_wallet": "customer_wallet_pos",
     }
 )
