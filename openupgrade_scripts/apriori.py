@@ -62,7 +62,8 @@ renamed_modules = {
     # OCA/manufacture
     "account_move_line_manufacture_info": "account_move_line_mrp_info",
     # OCA/pos
-    "pos_picking_load": "pos_sale_order_load",
+    # GRAP: we use pos_picking_load in V16, that comes from V12
+    # "pos_picking_load": "pos_sale_order_load",
     # OCA/server-tools
     "base_jsonify": "jsonifier",
     "openupgrade_records": "upgrade_analysis",
