@@ -187,6 +187,10 @@ renamed_modules.update(
         "pos_customer_display": "pos_driver_display",
         # https://github.com/grap/grap-odoo-custom-account/pull/69
         "grap_account_export_ebp": "fermente_account_export",
+        # https://github.com/grap/grap-odoo-custom-account/pull/82
+        "grap_custom_account_invoice_workflow": "fermente_account_invoice_workflow",
+        # https://github.com/grap/grap-odoo-custom-account/pull/83
+        "grap_custom_account_payment_workflow": "fermente_account_payment_workflow",
         # https://github.com/grap/grap-odoo-business/pull/179
         "product_label_account": "product_food_certification_account",
         "product_label_sale": "product_food_certification_sale",
