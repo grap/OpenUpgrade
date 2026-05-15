@@ -217,6 +217,8 @@ renamed_modules.update(
         # rename of wallet modules: https://github.com/coopiteasy/addons/pull/397
         "account_customer_wallet": "customer_wallet",
         "pos_customer_wallet": "customer_wallet_pos",
+        # Rename of intercompany_trade_base. (https://github.com/grap/odoo-addons-intercompany-trade/pull/72)
+        "intercompany_trade_base": "intercompany_trade",
     }
 )
 
