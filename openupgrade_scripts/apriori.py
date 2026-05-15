@@ -235,6 +235,13 @@ merged_modules.update(
         # res_partner_category_multi_company exists in V12
         # https://github.com/OCA/multi-company/pull/771
         "multi_company_base": "res_partner_category_multi_company",
+        # Intercompany refactoring
+        "intercompany_trade_account_cancel": "intercompany_trade_account",
+        "intercompany_trade_account_invoice_supplier_ref_unique": "intercompany_trade_account",
+        "intercompany_trade_fiscal_company": "intercompany_trade_account",
+        "intercompany_trade_fiscal_company_sale": "intercompany_trade_account",
+        "intercompany_trade_purchase": "intercompany_trade_account",
+        "intercompany_trade_stock": "intercompany_trade",
     }
 )
 
