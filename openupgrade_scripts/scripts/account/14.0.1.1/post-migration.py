@@ -432,9 +432,14 @@ def fill_statement_lines_with_no_move(env):
         else:
             stl_dates_by_company[stl_company] = stl_date
     st_lines = env["account.bank.statement.line"].browse(list(stl_dates.keys()))
-    for st_line in st_lines.with_context(
-        check_move_validity=False, tracking_disable=True
+    for _index, st_line in enumerate(
+        st_lines.with_context(check_move_validity=False, tracking_disable=True), start=1
     ):
+        _logger.info(
+            f"{_index} / {len(st_lines)}."
+            f" Creating account move for statement line {st_line.id}."
+            f" (statement {st_line.statement_id.id})"
+        )
         move = env["account.move"].create(
             {
                 "name": "/",
