@@ -232,6 +232,7 @@ merged_modules.update(
         # Account Export refactor
         "grap_account_export": "fermente_account_export",
         "grap_account_export_partner_code": "fermente_account_export",
+        "grap_account_export_partner_code_intercompany_trade_base": "fermente_account_export",
         # res_partner_category_multi_company exists in V12
         # https://github.com/OCA/multi-company/pull/771
         "multi_company_base": "res_partner_category_multi_company",
