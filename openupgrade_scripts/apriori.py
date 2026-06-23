@@ -219,6 +219,8 @@ renamed_modules.update(
         "pos_customer_wallet": "customer_wallet_pos",
         # Rename of intercompany_trade_base. (https://github.com/grap/odoo-addons-intercompany-trade/pull/72)
         "intercompany_trade_base": "intercompany_trade",
+        # https://github.com/grap/grap-odoo-incubator/pull/223
+        "sale_deposit_product_per_company": "sale_down_payment_product_per_company",
     }
 )
 
