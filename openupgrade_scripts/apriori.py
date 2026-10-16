@@ -221,6 +221,8 @@ renamed_modules.update(
         "intercompany_trade_base": "intercompany_trade",
         # https://github.com/grap/grap-odoo-incubator/pull/223
         "sale_deposit_product_per_company": "sale_down_payment_product_per_company",
+        # Inventory refactor
+        "stock_inventory_valuation": "stock_inventory_mgmt",
     }
 )
 
@@ -245,6 +247,10 @@ merged_modules.update(
         "intercompany_trade_fiscal_company_sale": "intercompany_trade_account",
         "intercompany_trade_purchase": "intercompany_trade_account",
         "intercompany_trade_stock": "intercompany_trade",
+        # Inventory refactor
+        "stock_inventory_disabled_product": "stock_inventory_mgmt",
+        "stock_inventory_merge": "stock_inventory_mgmt",
+        "stock_inventory_valuation_merge": "stock_inventory_mgmt",
     }
 )
 
